@@ -1,1 +1,0 @@
-# patil_rajnandini_ansible
