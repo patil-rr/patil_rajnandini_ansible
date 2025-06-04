@@ -5,4 +5,4 @@
   become: true
   tasks:
    - name: ping all hosts
-     ping:
+     ansible.builtin.ping:
