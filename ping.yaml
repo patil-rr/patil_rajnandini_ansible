@@ -1,1 +1,8 @@
 # patil_rajnandini_ansible
+---
+- name: ping module
+  hosts: all
+  become: true
+  tasks:
+   - name: ping all hosts
+     ping:
