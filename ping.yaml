@@ -1,8 +1,10 @@
 # patil_rajnandini_ansible
 ---
-- name: ping module
+- name: playook to check connectivity and print the msg
   hosts: all
-  become: true
   tasks:
-   - name: ping all hosts
-     ansible.builtin.ping:
+  - name: to check the connectivity
+    ping:
+  - name: to print the msg
+    debug:
+      msg: "Hello World"
