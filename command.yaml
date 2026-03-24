@@ -4,3 +4,5 @@
   tasks:
     - name: check the servers uptime
       ansible.builtin.command: uptime
+    - name: get the hostname 
+      command: hostname
