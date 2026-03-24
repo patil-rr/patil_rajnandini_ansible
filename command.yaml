@@ -1,0 +1,6 @@
+---
+- name: command module
+  hosts: all
+  tasks:
+    - name: check the servers uptime
+      ansible.builtin.command: uptime
