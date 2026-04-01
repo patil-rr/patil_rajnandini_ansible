@@ -27,7 +27,7 @@
       state: present
    
    - name: Enable Instana service
-    systemd:
+     systemd:
       name: instana-agent
       enabled: yes
 
