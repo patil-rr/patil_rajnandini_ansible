@@ -26,8 +26,8 @@
       name: "/tmp/{{ instana_rpm.files[0].path | basename }}"
       state: present
    
-   - name: Enable Instana service
-     systemd:
+  - name: Enable Instana service
+    systemd:
       name: instana-agent
       enabled: yes
 
