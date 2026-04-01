@@ -5,44 +5,54 @@
   gather_facts: no
 
   vars:
-    config_dir: /opt/instana/agent/etc/instana
+    source_server: instana_repo
+    instana_path: /appl/instana-installers
 
   tasks:
 
-  - name: Copy Instana RPM to server
-    copy:
-      src: instana-agent-static.rpm   # instana agent rpm file 
-      dest: /tmp/instana-agent.rpm
+  - name: Find Instana RPM on source server
+    find:
+      paths: "{{ instana_path }}"
+      patterns: "*.rpm"
+    delegate_to: "{{ source_server }}"
+    register: instana_rpm
 
-  - name: To install Instana RPM
+  - name: Copy Instana RPM to target server
+    shell: scp {{ instana_rpm.files[0].path }} {{ inventory_hostname }}:/tmp/
+    delegate_to: "{{ source_server }}"
+
+  - name: Install Instana RPM
     yum:
-      name: /tmp/instana-agent.rpm
+      name: "/tmp/{{ instana_rpm.files[0].path | basename }}"
       state: present
-
-  - name: To enable Instana service
-    service:
+   
+   - name: Enable Instana service
+    systemd:
       name: instana-agent
       enabled: yes
 
-  - name: Backup configuration.yaml
-    command: mv {{ instana_config_dir }}/configuration.yaml {{ instana_config_dir }}/configuration.yaml.bck
+  - name: Backup configuration file
+    shell: mv /opt/instana/agent/etc/instana/configuration.yaml /opt/instana/agent/etc/instana/configuration.yaml.bck
     ignore_errors: yes
 
-  - name: Backup backend config
-    command: mv {{ instana_config_dir }}/com.instana.agent.main.sender.backend.cfg {{ instana_config_dir }}/com.instana.agent.main.sender.backend.cfg.bck
+  - name: Backup backend file
+    shell: mv /opt/instana/agent/etc/instana/com.instana.agent.main.sender.backend.cfg /opt/instana/agent/etc/instana/com.instana.agent.main.sender.backend.cfg.bck
     ignore_errors: yes
 
-  - name: Copy new configuration.yaml
-    copy:
-      src: configuration.yaml    # need to provide file path 
-      dest: "{{ instana_config_dir }}/configuration.yaml"
-      
-  - name: Copy backend config file
-    copy:
-      src: com.instana.agent.main.sender.backend.cfg     # need to provide file path 
-      dest: "{{ instana_config_dir }}/com.instana.agent.main.sender.backend.cfg"
-      
-  - name: Restart Instana agent
-    service:
+  - name: Copy configuration.yaml
+    shell: scp {{ instana_path }}/configuration.yaml {{ inventory_hostname }}:/opt/instana/agent/etc/instana/
+    delegate_to: "{{ source_server }}"
+
+  - name: Copy backend config
+    shell: scp {{ instana_path }}/com.instana.agent.main.sender.backend.cfg {{ inventory_hostname }}:/opt/instana/agent/etc/instana/
+    delegate_to: "{{ source_server }}"
+
+#  - name: Enable Instana service
+   # systemd:
+   #   name: instana-agent
+    #  enabled: yes
+
+  - name: Restart Instana Agent
+    systemd:
       name: instana-agent
       state: restarted
