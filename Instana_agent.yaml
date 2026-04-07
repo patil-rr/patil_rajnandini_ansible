@@ -11,7 +11,7 @@
       - /appl/instana-installers/linux/com.instana.agent.main.sender.Backend.cfg
     local_temp_dir: /tmp
     remote_temp_dir: /tmp/deployment
-    dest_config_dir: /tmp/deployment/install
+    dest_config_dir: /opt/instana/agent/etc/instana
     service_name: myapp
     backup_suffix: ".bak"
 
@@ -72,7 +72,13 @@
         name: "{{ remote_temp_dir }}/{{ rpm_file | basename }}"
         state: present
         disable_gpg_check: yes
-
+        
+    - name: Create Instana config directory
+      become: true
+      file:
+        path: "{{ dest_config_dir }}"
+        state: directory
+        mode: '0755'
     - name: Backup existing config files
       copy:
         src: "{{ dest_config_dir }}/{{ item | basename }}"
