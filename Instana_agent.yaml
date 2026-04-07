@@ -101,5 +101,5 @@
 
     - name: Restart service
       service:
-        name: "{{ service_name }}"
+        name: "{{instana-agent }}"
         state: restarted
