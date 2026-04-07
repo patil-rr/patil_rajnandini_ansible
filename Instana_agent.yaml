@@ -28,6 +28,7 @@
 
 
     - name: Fetch RPM from source server
+      become: true
       fetch:
         src: "{{ rpm_file }}"
         dest: "{{ local_temp_dir }}/"
