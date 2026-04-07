@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    source_host: 156.150.36.186
+    source_host: 156.150.36.184
     rpm_file: /appl/instana-installers/instana-agent-static-j9-20260311-1055.x86_64.rpm
     config_files:
       - /appl/instana-installers/configuration.yaml
