@@ -1,58 +1,98 @@
 ---
-- name: Install Instana Agent
+- name: Install and Configure Instana
   hosts: all
   become: yes
-  gather_facts: no
 
   vars:
-    source_server: instana_repo
-    instana_path: /appl/instana-installers
+    source_host: anscore
+    rpm_file: /tmp/dummy.rpm
+    config_files:
+      - /tmp/app.conf
+      - /tmp/db.conf
+    local_temp_dir: /tmp
+    remote_temp_dir: /tmp/deployment
+    dest_config_dir: /tmp/deployment/install
+    service_name: myapp
+    backup_suffix: ".bak"
 
   tasks:
 
-  - name: Find Instana RPM on source server
-    find:
-      paths: "{{ instana_path }}"
-      patterns: "*.rpm"
-    delegate_to: "{{ source_server }}"
-    register: instana_rpm
 
-  - name: Copy Instana RPM to target server
-    shell: scp {{ instana_rpm.files[0].path }} {{ inventory_hostname }}:/tmp/
-    delegate_to: "{{ source_server }}"
+    - name: Create temp dir on control node
+      file:
+        path: "{{ local_temp_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
 
-  - name: Install Instana RPM
-    yum:
-      name: "/tmp/{{ instana_rpm.files[0].path | basename }}"
-      state: present
-   
-  - name: Enable Instana service
-    systemd:
-      name: instana-agent
-      enabled: yes
 
-  - name: Backup configuration file
-    shell: mv /opt/instana/agent/etc/instana/configuration.yaml /opt/instana/agent/etc/instana/configuration.yaml.bck
-    ignore_errors: yes
+    - name: Fetch RPM from source server
+      fetch:
+        src: "{{ rpm_file }}"
+        dest: "{{ local_temp_dir }}/"
+        flat: yes
+      delegate_to: "{{ source_host }}"
+      run_once: true
 
-  - name: Backup backend file
-    shell: mv /opt/instana/agent/etc/instana/com.instana.agent.main.sender.backend.cfg /opt/instana/agent/etc/instana/com.instana.agent.main.sender.backend.cfg.bck
-    ignore_errors: yes
+    - name: Fetch config files from source server
+      fetch:
+        src: "{{ item }}"
+        dest: "{{ local_temp_dir }}/"
+        flat: yes
+      loop: "{{ config_files }}"
+      delegate_to: "{{ source_host }}"
+      run_once: true
 
-  - name: Copy configuration.yaml
-    shell: scp {{ instana_path }}/configuration.yaml {{ inventory_hostname }}:/opt/instana/agent/etc/instana/
-    delegate_to: "{{ source_server }}"
 
-  - name: Copy backend config
-    shell: scp {{ instana_path }}/com.instana.agent.main.sender.backend.cfg {{ inventory_hostname }}:/opt/instana/agent/etc/instana/
-    delegate_to: "{{ source_server }}"
+    - name: Ensure temp directory exists on target
+      file:
+        path: "{{ remote_temp_dir }}"
+        state: directory
+        mode: '0755'
 
-#  - name: Enable Instana service
-   # systemd:
-   #   name: instana-agent
-    #  enabled: yes
 
-  - name: Restart Instana Agent
-    systemd:
-      name: instana-agent
-      state: restarted
+    - name: Copy RPM to target
+      copy:
+        src: "{{ local_temp_dir }}/{{ rpm_file | basename }}"
+        dest: "{{ remote_temp_dir }}/"
+        mode: '0644'
+
+    - name: Copy config files to target
+      copy:
+        src: "{{ local_temp_dir }}/{{ item | basename }}"
+        dest: "{{ remote_temp_dir }}/"
+        mode: '0644'
+      loop: "{{ config_files }}"
+
+
+    - name: Install RPM package
+      dnf:
+        name: "{{ remote_temp_dir }}/{{ rpm_file | basename }}"
+        state: present
+        disable_gpg_check: yes
+
+    - name: Backup existing config files
+      copy:
+        src: "{{ dest_config_dir }}/{{ item | basename }}"
+        dest: "{{ dest_config_dir }}/{{ item | basename }}{{ backup_suffix }}"
+        remote_src: yes
+      ignore_errors: yes
+      loop: "{{ config_files }}"
+
+    - name: Deploy new config files
+      copy:
+        src: "{{ remote_temp_dir }}/{{ item | basename }}"
+        dest: "{{ dest_config_dir }}/{{ item | basename }}"
+        owner: root
+        group: root
+        mode: '0644'
+        remote_src: yes
+
+      loop: "{{ config_files }}"
+
+
+    - name: Restart service
+      service:
+        name: "{{ service_name }}"
+        state: restarted
