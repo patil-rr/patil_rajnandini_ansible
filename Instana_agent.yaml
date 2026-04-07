@@ -5,7 +5,7 @@
 
   vars:
     source_host: 156.150.36.186
-    rpm_file: /appl/instana_installers/instana-agent-static-j9-20260311-1055.x86_64.rpm
+    rpm_file: /appl/instana-installers/instana-agent-static-j9-20260311-1055.x86_64.rpm
     config_files:
       - /appl/instana_installers/configuration.yaml
       - /appl/instana_installers/com.insta.agent.main.sender.backend.cfg
