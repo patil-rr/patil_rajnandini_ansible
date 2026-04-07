@@ -8,7 +8,7 @@
     rpm_file: /appl/instana-installers/linux/instana-agent-static-j9-20260311-1055.x86_64.rpm
     config_files:
       - /appl/instana-installers/linux/configuration.yaml
-      - /appl/instana-installers/linux/com.instana.agent.main.sender.backend.cfg
+      - /appl/instana-installers/linux/com.instana.agent.main.sender.Backend.cfg
     local_temp_dir: /tmp
     remote_temp_dir: /tmp/deployment
     dest_config_dir: /tmp/deployment/install
