@@ -12,7 +12,7 @@
     local_temp_dir: /tmp
     remote_temp_dir: /tmp/deployment
     dest_config_dir: /opt/instana/agent/etc/instana
-    service_name: myapp
+    service_name: instana-agent
     backup_suffix: ".bak"
 
   tasks:
@@ -101,5 +101,5 @@
 
     - name: Restart service
       service:
-        name: "{{instana-agent }}"
+        name: "{{service_name}}"
         state: restarted
