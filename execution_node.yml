@@ -1,0 +1,17 @@
+---
+- name: Get AWX Execution Node
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Display execution node using variable
+      debug:
+        msg: "Execution node (var): {{ awx_execution_node | default('Not available') }}"
+
+    - name: Display execution node using environment variable
+      shell: echo $AWX_EXECUTION_NODE
+      register: exec_node_env
+
+    - name: Print execution node from environment
+      debug:
+        msg: "Execution node (env): {{ exec_node_env.stdout }}"
