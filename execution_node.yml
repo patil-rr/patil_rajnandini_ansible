@@ -4,10 +4,11 @@
   gather_facts: yes
 
   tasks:
-    - name: awx
-      set_fact:
-        exec_node: "{{ awx_execution_node | default('') }}"
+    - name: Get Execution Node 
+      shell: hostname
+      register: resultnode
+      delegate_to: ansibletest01
 
 
     - debug:
-        msg: "Execution node: {{ exec_node }}"
+        msg: "Execution node: {{ resultnode}}"
