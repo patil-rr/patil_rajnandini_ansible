@@ -4,9 +4,10 @@
   gather_facts: yes
 
   tasks:
-    - name: Capture execution node
+    - name: awx
       set_fact:
-        exec_node: "{{ ansible_hostname }}"
+        exec_node: "{{ awx_execution_node | default('') }}"
+
 
     - debug:
         msg: "Execution node: {{ exec_node }}"
