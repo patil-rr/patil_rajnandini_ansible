@@ -11,4 +11,4 @@
 
 
     - debug:
-        msg: "Execution node: {{ resultnode}}"
+        msg: "Execution node: {{ resultnode.stdout}}"
