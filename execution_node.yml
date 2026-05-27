@@ -1,17 +1,12 @@
 ---
-- name: Get AWX Execution Node
+- name: Get execution node
   hosts: localhost
-  gather_facts: no
+  gather_facts: yes
 
   tasks:
-    - name: Display execution node using variable
-      debug:
-        msg: "Execution node (var): {{ awx_execution_node | default('Not available') }}"
+    - name: Capture execution node
+      set_fact:
+        exec_node: "{{ ansible_hostname }}"
 
-    - name: Display execution node using environment variable
-      shell: echo $AWX_EXECUTION_NODE
-      register: exec_node_env
-
-    - name: Print execution node from environment
-      debug:
-        msg: "Execution node (env): {{ exec_node_env.stdout }}"
+    - debug:
+        msg: "Execution node: {{ exec_node }}"
